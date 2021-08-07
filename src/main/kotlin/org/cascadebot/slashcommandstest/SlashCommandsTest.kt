@@ -11,6 +11,8 @@ object SlashCommandsTest {
 
     val LOG: Logger = LoggerFactory.getLogger("SlashCommandsTest");
 
+
+
     fun run() {
         val configFile = File("config.yml")
         if (!configFile.exists()) {
