@@ -12,7 +12,7 @@ class PermissionsGroupAddCommand: SubCommand("add", "add", "Adds a permission to
 
     override val commandData: SubcommandData
         get() = SubcommandData(command, description)
-            .addOption(OptionType.STRING, "group", "The group to target")
+            .addOption(OptionType.STRING, "target", "The group to target")
             .addOption(OptionType.STRING, "permission", "The permission to add")
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {

@@ -41,12 +41,16 @@ object SlashCommandsTest {
                         if (!subCommandGroups.contains(command.parent)) {
                             subCommandGroups[command.parent] = mutableListOf(command.group)
                         } else {
-                            subCommandGroups[command.parent]?.add(command.group)
+                            if (!subCommandGroups[command.parent]?.contains(command.group)!!) {
+                                subCommandGroups[command.parent]?.add(command.group)
+                            }
                         }
                         if (!subCommandsOfGroup.contains(command.group)) {
                             subCommandsOfGroup[command.group] = mutableListOf(command)
                         } else {
-                            subCommandsOfGroup[command.group]?.add(command)
+                            if (!subCommandsOfGroup[command.group]?.contains(command)!!) {
+                                subCommandsOfGroup[command.group]?.add(command)
+                            }
                         }
                     } else {
                         if (!subCommands.contains(command.parent)) {
@@ -69,7 +73,7 @@ object SlashCommandsTest {
             if (subCommands.contains(parentCommand)) {
                 for (subCommand in subCommands[parentCommand]!!) {
                     LOG.info("\tWith sub command " + subCommand.command)
-                    data.subcommands.add(subCommand.commandData)
+                    data.addSubcommands(subCommand.commandData)
                 }
             }
             if (subCommandGroups.contains(parentCommand)) {
@@ -78,9 +82,9 @@ object SlashCommandsTest {
                     val groupData = SubcommandGroupData(subCommandGroup.groupName, subCommandGroup.description)
                     for (subCommand in subCommandsOfGroup[subCommandGroup]!!) {
                         LOG.info("\t\tWith sub command " + subCommand.command)
-                        groupData.subcommands.add(subCommand.commandData)
+                        groupData.addSubcommands(subCommand.commandData)
                     }
-                    data.subcommandGroups.add(groupData)
+                    data.addSubcommandGroups(groupData)
                 }
             }
             jda.upsertCommand(data).queue { LOG.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?

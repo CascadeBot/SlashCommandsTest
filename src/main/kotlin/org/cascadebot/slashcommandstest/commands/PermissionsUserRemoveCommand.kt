@@ -12,7 +12,7 @@ class PermissionsUserRemoveCommand: SubCommand("remove", "remove", "Removes a pe
 
     override val commandData: SubcommandData
         get() = SubcommandData(command, description)
-            .addOption(OptionType.USER, "user", "The user to target")
+            .addOption(OptionType.USER, "target", "The user to target")
             .addOption(OptionType.STRING, "permission", "The permission to remove")
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {

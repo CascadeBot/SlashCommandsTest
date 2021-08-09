@@ -12,7 +12,7 @@ class PermissionsUserAddCommand: SubCommand("add", "add", "Adds a permission to 
 
     override val commandData: SubcommandData
         get() = SubcommandData(command, description)
-            .addOption(OptionType.USER, "user", "The user to target")
+            .addOption(OptionType.USER, "target", "The user to target")
             .addOption(OptionType.STRING, "permission", "The permission to add")
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {
