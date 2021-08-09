@@ -9,20 +9,20 @@ import kotlin.system.exitProcess
 
 class CommandManager {
 
-    private val _commands: MutableList<Command> = mutableListOf()
+    private val _commands: MutableList<ExecutableCommand> = mutableListOf()
     val commands
         get() = _commands.toList()
 
-    fun getCommand(command: String?): Command? {
+    fun getCommand(command: String?): ExecutableCommand? {
         for (cmd in _commands) {
             if (cmd.command == command) return cmd
         }
         return null
     }
 
-    fun getCommandsByModule(type: Module): List<Command> {
+    fun getCommandsByModule(type: Module): List<ExecutableCommand> {
         return _commands
-            .filter { command: Command -> command.module == type }
+            .filter { command: ExecutableCommand -> command.module == type }
     }
 
     companion object {
@@ -37,8 +37,8 @@ class CommandManager {
             ).getTopLevelClassesRecursive("org.cascadebot.slashcommandstest.commands").asList()
             val classes = classInfos.stream().map { it.load() }.collect(Collectors.toList())
             for (c in classes) {
-                if (Command::class.java.isAssignableFrom(c)) {
-                    val command: Command = ConstructorUtils.invokeConstructor(c) as Command
+                if (ExecutableCommand::class.java.isAssignableFrom(c)) {
+                    val command: ExecutableCommand = ConstructorUtils.invokeConstructor(c) as ExecutableCommand
                     _commands.add(command)
                 }
             }
