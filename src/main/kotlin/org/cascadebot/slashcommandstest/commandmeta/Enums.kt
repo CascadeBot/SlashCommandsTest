@@ -6,7 +6,8 @@ enum class ParentCommand(
     val permission: String,
     val description: String
 ) {
-    PERMISSION("permission", Module.MODERATION, "permission", "Modifies permissions")
+    PERMISSION("permission", Module.MODERATION, "permission", "Modifies permissions"),
+    PLAY("play", Module.MUSIC, "play", "Plays some music")
 }
 
 enum class SubCommandGroup(

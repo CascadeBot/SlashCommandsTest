@@ -9,8 +9,7 @@ class EventListener : ListenerAdapter() {
     override fun onSlashCommand(event: SlashCommandEvent) {
         val args : Map<String, List<OptionMapping>> = event.options.groupBy { it.name }
 
-
-
+        val commandId = event.commandIdLong;
     }
 
 }

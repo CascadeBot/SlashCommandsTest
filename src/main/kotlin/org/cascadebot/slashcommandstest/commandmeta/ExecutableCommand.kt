@@ -5,4 +5,7 @@ abstract class ExecutableCommand(
     val module: Module,
     val permission: String
 ) {
+
+    abstract fun onCommand(context: CommandContext, args: CommandArgs, data: Any/* , something else? */)
+
 }
