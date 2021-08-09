@@ -1,6 +1,5 @@
 package org.cascadebot.slashcommandstest.commandmeta
 
-import jdk.nashorn.internal.objects.annotations.Getter
 import java.util.Arrays
 import java.util.EnumSet
 import java.util.stream.Collectors

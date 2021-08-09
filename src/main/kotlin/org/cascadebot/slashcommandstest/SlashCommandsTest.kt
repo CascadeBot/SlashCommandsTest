@@ -1,6 +1,5 @@
 package org.cascadebot.slashcommandstest
 
-import jdk.internal.org.jline.utils.Log
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import net.dv8tion.jda.api.JDA
@@ -59,28 +58,32 @@ object SlashCommandsTest {
                 }
                 is ExecutableRootCommand -> {
                     LOG.info("Upserting command " + command.command)
-                    jda.upsertCommand(command.commandData).queue { Log.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
+                    jda.upsertCommand(command.commandData).queue { LOG.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
                 }
             }
         }
 
         for (parentCommand in ParentCommand.values()) {
             LOG.info("Upserting command " + parentCommand.command)
-            val data = CommandData(parentCommand.name, parentCommand.description)
-            for (subCommand in subCommands[parentCommand]!!) {
-                LOG.info("\tWith sub command " + subCommand.command)
-                data.subcommands.add(subCommand.commandData)
-            }
-            for (subCommandGroup in subCommandGroups[parentCommand]!!) {
-                LOG.info("\tWith sub command group " + subCommandGroup.name)
-                val groupData = SubcommandGroupData(subCommandGroup.groupName, subCommandGroup.description)
-                for (subCommand in subCommandsOfGroup[subCommandGroup]!!) {
-                    LOG.info("\t\tWith sub command " + subCommand.command)
-                    groupData.subcommands.add(subCommand.commandData)
+            val data = CommandData(parentCommand.command, parentCommand.description)
+            if (subCommands.contains(parentCommand)) {
+                for (subCommand in subCommands[parentCommand]!!) {
+                    LOG.info("\tWith sub command " + subCommand.command)
+                    data.subcommands.add(subCommand.commandData)
                 }
-                data.subcommandGroups.add(groupData)
             }
-            jda.upsertCommand(data).queue { Log.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
+            if (subCommandGroups.contains(parentCommand)) {
+                for (subCommandGroup in subCommandGroups[parentCommand]!!) {
+                    LOG.info("\tWith sub command group " + subCommandGroup.groupName)
+                    val groupData = SubcommandGroupData(subCommandGroup.groupName, subCommandGroup.description)
+                    for (subCommand in subCommandsOfGroup[subCommandGroup]!!) {
+                        LOG.info("\t\tWith sub command " + subCommand.command)
+                        groupData.subcommands.add(subCommand.commandData)
+                    }
+                    data.subcommandGroups.add(groupData)
+                }
+            }
+            jda.upsertCommand(data).queue { LOG.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
         }
 
         LOG.info("All commands queued for upsert")

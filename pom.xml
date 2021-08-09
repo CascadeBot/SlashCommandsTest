@@ -118,6 +118,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.0-jre</version>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>

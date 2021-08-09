@@ -2,6 +2,7 @@ package org.cascadebot.slashcommandstest.commandmeta
 
 import com.google.common.reflect.ClassPath
 import org.apache.commons.lang3.reflect.ConstructorUtils
+import org.cascadebot.slashcommandstest.SlashCommandsTest
 import org.reflections.ReflectionUtils
 import org.slf4j.LoggerFactory
 import java.util.stream.Collectors
@@ -32,10 +33,10 @@ class CommandManager {
     init {
         val start = System.currentTimeMillis()
         try {
-            val classInfos: List<ClassPath.ClassInfo> = ClassPath.from(
-                CommandManager::class.java.classLoader
-            ).getTopLevelClassesRecursive("org.cascadebot.slashcommandstest.commands").asList()
-            val classes = classInfos.stream().map { it.load() }.collect(Collectors.toList())
+            val classInfos: Set<ClassPath.ClassInfo> = ClassPath.from(
+                SlashCommandsTest::class.java.classLoader
+            ).getTopLevelClassesRecursive("org.cascadebot.slashcommandstest.commands")
+            val classes = classInfos.map { it.load() }
             for (c in classes) {
                 if (ExecutableCommand::class.java.isAssignableFrom(c)) {
                     val command: ExecutableCommand = ConstructorUtils.invokeConstructor(c) as ExecutableCommand
