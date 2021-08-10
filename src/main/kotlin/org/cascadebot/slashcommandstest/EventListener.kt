@@ -14,7 +14,7 @@ class EventListener : ListenerAdapter() {
         val args = CommandArgs(event.options.groupBy { it.name })
 
         val path = event.commandPath
-        val command = getCommand(path) ?: return
+        val command = getCommand(path) ?: return // TODO reply with some sort of message saying the command doesn't exist
 
         event.deferReply()
         command.onCommand(CommandContext(event), args, Object())
