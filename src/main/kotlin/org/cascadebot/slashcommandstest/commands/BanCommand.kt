@@ -14,7 +14,7 @@ class BanCommand : ExecutableRootCommand("ban", Module.MODERATION, "Bans a user"
             .addOption(OptionType.USER, "user", "The user to be banned", true)
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {
-
+        context.reply("Banned " + args.getArgAsMember("user")?.asMention + " (not really)")
     }
 
 }

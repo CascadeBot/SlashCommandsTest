@@ -4,8 +4,11 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
+import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import org.cascadebot.slashcommandstest.commandmeta.CommandManager
 import org.cascadebot.slashcommandstest.commandmeta.ExecutableRootCommand
 import org.cascadebot.slashcommandstest.commandmeta.ParentCommand
@@ -20,10 +23,18 @@ import kotlin.system.exitProcess
 object SlashCommandsTest {
 
     val LOG: Logger = LoggerFactory.getLogger("SlashCommandsTest");
-    private val commandManager = CommandManager()
+    val commandManager = CommandManager()
 
     fun run() {
+        initConfig()
+        val defaultShardManagerBuilder = DefaultShardManagerBuilder.create(GatewayIntent.getIntents(GatewayIntent.DEFAULT))
+            .addEventListeners(EventListener())
+            .setToken(Config.INS!!.botToken)
+            .setShardsTotal(-1)
+            .setActivityProvider { Activity.playing("Testing slash command") }
+            .setBulkDeleteSplittingEnabled(false)
 
+        defaultShardManagerBuilder.build()
     }
 
     fun pushCommands() {
