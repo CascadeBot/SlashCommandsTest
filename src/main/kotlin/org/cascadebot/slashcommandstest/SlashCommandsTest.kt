@@ -17,7 +17,6 @@ import org.cascadebot.slashcommandstest.commandmeta.SubCommandGroup
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.function.Consumer
 import kotlin.system.exitProcess
 
 object SlashCommandsTest {
@@ -37,7 +36,55 @@ object SlashCommandsTest {
         defaultShardManagerBuilder.build()
     }
 
-    fun pushCommands() {
+    private fun buildSubCommands(command: SubCommand, subCommands: MutableMap<ParentCommand, MutableList<SubCommand>>, subCommandGroups: MutableMap<ParentCommand, MutableList<SubCommandGroup>>, subCommandsOfGroup: MutableMap<SubCommandGroup, MutableList<SubCommand>>) {
+        if (command.group != null) {
+            if (!subCommandGroups.contains(command.parent)) {
+                subCommandGroups[command.parent] = mutableListOf(command.group)
+            } else {
+                if (!subCommandGroups[command.parent]?.contains(command.group)!!) {
+                    subCommandGroups[command.parent]?.add(command.group)
+                }
+            }
+            if (!subCommandsOfGroup.contains(command.group)) {
+                subCommandsOfGroup[command.group] = mutableListOf(command)
+            } else {
+                if (!subCommandsOfGroup[command.group]?.contains(command)!!) {
+                    subCommandsOfGroup[command.group]?.add(command)
+                }
+            }
+        } else {
+            if (!subCommands.contains(command.parent)) {
+                subCommands[command.parent] = mutableListOf(command)
+            } else {
+                subCommands[command.parent]?.add(command)
+            }
+        }
+    }
+
+    private fun upsertSubCommands(jda: JDA, parentCommand: ParentCommand, subCommands: MutableMap<ParentCommand, MutableList<SubCommand>>, subCommandGroups: MutableMap<ParentCommand, MutableList<SubCommandGroup>>, subCommandsOfGroup: MutableMap<SubCommandGroup, MutableList<SubCommand>>) {
+        LOG.info("Upserting command " + parentCommand.command)
+        val data = CommandData(parentCommand.command, parentCommand.description)
+        if (subCommands.contains(parentCommand)) {
+            for (subCommand in subCommands[parentCommand]!!) {
+                LOG.info("\tWith sub command " + subCommand.command)
+                data.addSubcommands(subCommand.commandData)
+            }
+        }
+        if (subCommandGroups.contains(parentCommand)) {
+            for (subCommandGroup in subCommandGroups[parentCommand]!!) {
+                LOG.info("\tWith sub command group " + subCommandGroup.groupName)
+                val groupData = SubcommandGroupData(subCommandGroup.groupName, subCommandGroup.description)
+                for (subCommand in subCommandsOfGroup[subCommandGroup]!!) {
+                    LOG.info("\t\tWith sub command " + subCommand.command)
+                    groupData.addSubcommands(subCommand.commandData)
+                }
+                data.addSubcommandGroups(groupData)
+            }
+        }
+        jda.upsertCommand(data).queue { LOG.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
+    }
+
+    fun updateCommands() {
         initConfig()
         val jda: JDA = JDABuilder.createLight(Config.INS?.botToken).build()
 
@@ -48,28 +95,7 @@ object SlashCommandsTest {
         for (command in commandManager.commands) {
             when (command) {
                 is SubCommand -> {
-                    if (command.group != null) {
-                        if (!subCommandGroups.contains(command.parent)) {
-                            subCommandGroups[command.parent] = mutableListOf(command.group)
-                        } else {
-                            if (!subCommandGroups[command.parent]?.contains(command.group)!!) {
-                                subCommandGroups[command.parent]?.add(command.group)
-                            }
-                        }
-                        if (!subCommandsOfGroup.contains(command.group)) {
-                            subCommandsOfGroup[command.group] = mutableListOf(command)
-                        } else {
-                            if (!subCommandsOfGroup[command.group]?.contains(command)!!) {
-                                subCommandsOfGroup[command.group]?.add(command)
-                            }
-                        }
-                    } else {
-                        if (!subCommands.contains(command.parent)) {
-                            subCommands[command.parent] = mutableListOf(command)
-                        } else {
-                            subCommands[command.parent]?.add(command)
-                        }
-                    }
+                    buildSubCommands(command, subCommands, subCommandGroups, subCommandsOfGroup)
                 }
                 is ExecutableRootCommand -> {
                     LOG.info("Upserting command " + command.command)
@@ -79,30 +105,45 @@ object SlashCommandsTest {
         }
 
         for (parentCommand in ParentCommand.values()) {
-            LOG.info("Upserting command " + parentCommand.command)
-            val data = CommandData(parentCommand.command, parentCommand.description)
-            if (subCommands.contains(parentCommand)) {
-                for (subCommand in subCommands[parentCommand]!!) {
-                    LOG.info("\tWith sub command " + subCommand.command)
-                    data.addSubcommands(subCommand.commandData)
-                }
-            }
-            if (subCommandGroups.contains(parentCommand)) {
-                for (subCommandGroup in subCommandGroups[parentCommand]!!) {
-                    LOG.info("\tWith sub command group " + subCommandGroup.groupName)
-                    val groupData = SubcommandGroupData(subCommandGroup.groupName, subCommandGroup.description)
-                    for (subCommand in subCommandsOfGroup[subCommandGroup]!!) {
-                        LOG.info("\t\tWith sub command " + subCommand.command)
-                        groupData.addSubcommands(subCommand.commandData)
-                    }
-                    data.addSubcommandGroups(groupData)
-                }
-            }
-            jda.upsertCommand(data).queue { LOG.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
+            upsertSubCommands(jda, parentCommand, subCommands, subCommandGroups, subCommandsOfGroup)
         }
 
         LOG.info("All commands queued for upsert")
-        // TODO exit when jda is done
+        // TODO exit when jda is done, maybe don't use jda?
+    }
+
+    fun pushCommands() {
+        initConfig()
+        val jda: JDA = JDABuilder.createLight(Config.INS?.botToken).build()
+
+        val subCommands: MutableMap<ParentCommand, MutableList<SubCommand>> = mutableMapOf()
+        val subCommandGroups: MutableMap<ParentCommand, MutableList<SubCommandGroup>> = mutableMapOf()
+        val subCommandsOfGroup: MutableMap<SubCommandGroup, MutableList<SubCommand>> = mutableMapOf()
+
+        jda.retrieveCommands().queue {
+            for (command in commandManager.commands) {
+                when(command) {
+                    is SubCommand -> {
+                        buildSubCommands(command, subCommands, subCommandGroups, subCommandsOfGroup)
+                    }
+                    is ExecutableRootCommand -> {
+                        if (!it.map { com -> com.name }.contains(command.command)) {
+                            LOG.info("Upserting command " + command.command)
+                            jda.upsertCommand(command.commandData).queue { LOG.info("Command " + it.name + " upserted with id " + it.id) } // TODO store these ids somewhere?
+                        }
+                    }
+                }
+            }
+
+            for (parentCommand in ParentCommand.values()) {
+                if (!it.map { com -> com.name }.contains(parentCommand.command)) {
+                    upsertSubCommands(jda, parentCommand, subCommands, subCommandGroups, subCommandsOfGroup)
+                }
+            }
+
+            LOG.info("All commands queued for upsert")
+            // TODO exit when jda is done, maybe don't use jda?
+        }
     }
 
     fun initConfig() {
@@ -127,11 +168,28 @@ fun main(args: Array<String>) {
         description = "Attempts to update slash commands with Discord then exits"
     )
 
+    val pushCommands by parser.option(
+        ArgType.Boolean,
+        fullName = "push-commands",
+        shortName = "p",
+        description = "Attempts to push new slash commands to Discord then exits"
+    )
+
     parser.parse(args)
 
+    var exit = false
     if (updateCommands == true) {
+        exit = true;
+        SlashCommandsTest.updateCommands()
+    }
+
+    if (pushCommands == true) {
+        exit = true;
         SlashCommandsTest.pushCommands()
-    } else {
+    }
+
+    if (!exit) {
         SlashCommandsTest.run()
     }
+
 }
