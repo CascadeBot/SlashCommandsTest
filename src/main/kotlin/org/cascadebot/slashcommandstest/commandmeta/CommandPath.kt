@@ -1,6 +1,6 @@
 package org.cascadebot.slashcommandstest.commandmeta
 
-data class CommandPath(var rootId: Long) {
+class CommandPath(var rootId: Long) {
 
     var path: List<String> = listOf()
         private set
@@ -19,10 +19,8 @@ data class CommandPath(var rootId: Long) {
                 if (!matches) {
                     return false
                 }
-                for (i in this.path.indices) {
-                    if (this.path[i] != other.path[i]) {
-                        matches = false
-                    }
+                if (this.path.indices.any { this.path[it] != other.path[it] }) {
+                    matches = false
                 }
                 matches
             }
@@ -31,4 +29,11 @@ data class CommandPath(var rootId: Long) {
             }
         }
     }
+
+    override fun hashCode(): Int {
+        var result = rootId.hashCode()
+        result = 31 * result + path.hashCode()
+        return result
+    }
+
 }

@@ -14,21 +14,15 @@ class CommandManager {
     val commands
         get() = _commands.toList()
 
-    fun getCommand(rootId: Long?, path: String): ExecutableCommand? {
+    fun getCommand(rootId: Long?, path: String): ExecutableCommand {
         val parts = path.split("/")
         // If rootId is null then assume it's a global command
         return if (rootId == null) {
-            _commands.filter {
-                var matches = true
-                for (i in parts.indices) {
-                    if (parts[i] != it.key.path[i]) {
-                        matches = false;
-                    }
-                }
-                matches
-            }.map { it.value }.first { true }
+            _commands.filter { entry ->
+                !parts.indices.any { parts.getOrNull(it) != entry.key.path.getOrNull(it) }
+            }.map { it.value }.first()
         } else {
-            _commands.filter { it.key == CommandPath(rootId, parts) }.map { it.value }.first { true }
+            _commands.filter { it.key == CommandPath(rootId, parts) }.map { it.value }.first()
             // TODO check for guild command?
         }
     }
