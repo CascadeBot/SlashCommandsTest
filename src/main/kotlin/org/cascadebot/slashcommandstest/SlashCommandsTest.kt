@@ -38,36 +38,6 @@ object SlashCommandsTest {
             .setBulkDeleteSplittingEnabled(false)
 
         shardManager = defaultShardManagerBuilder.build()
-
-        getClient()!!.retrieveCommands().queue{
-            var id = 0;
-            for (command in commandManager.commands.map { it.first }) {
-                for (discordCom in it) {
-                    if (discordCom.subcommandGroups.size > 0) {
-                        for (subGroup in discordCom.subcommandGroups) {
-                            for (subComm in subGroup.subcommands) {
-                                val path = listOf(discordCom.name, subGroup.name, subComm.name)
-                                if (command == CommandPath(0, path)) {
-                                    command.rootId = discordCom.idLong
-                                }
-                            }
-                        }
-                    } else if (discordCom.subcommands.size > 0) {
-                        for (subComm in discordCom.subcommands) {
-                            val path = listOf(discordCom.name, subComm.name)
-                            if (command == CommandPath(0, path)) {
-                                command.rootId = discordCom.idLong
-                            }
-                        }
-                    } else {
-                        val path = listOf(discordCom.name)
-                        if (command == CommandPath(0, path)) {
-                            command.rootId = discordCom.idLong
-                        }
-                    }
-                }
-            }
-        }
     }
 
     fun getClient(): JDA? {

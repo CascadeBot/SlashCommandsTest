@@ -13,6 +13,12 @@ data class CommandPath(var rootId: Long) {
         return when(other) {
             is CommandPath -> {
                 var matches = this.rootId == other.rootId
+                if (this.path.size != other.path.size) {
+                    matches = false
+                }
+                if (!matches) {
+                    return false
+                }
                 for (i in this.path.indices) {
                     if (this.path[i] != other.path[i]) {
                         matches = false
