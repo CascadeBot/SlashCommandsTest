@@ -9,20 +9,32 @@ import java.util.stream.Collectors
 import kotlin.system.exitProcess
 
 class CommandManager {
-
-    private val _commands: MutableList<ExecutableCommand> = mutableListOf()
+    // TODO figure out how to handle guild level commands
+    private val _commands: MutableMap<CommandPath, ExecutableCommand> = mutableMapOf()
     val commands
         get() = _commands.toList()
 
-    fun getCommand(command: String?): ExecutableCommand? {
-        for (cmd in _commands) {
-            if (cmd.command == command) return cmd
+    fun getCommand(rootId: Long?, path: String): ExecutableCommand? {
+        val parts = path.split("/")
+        // If rootId is null then assume it's a global command
+        return if (rootId == null) {
+            _commands.filter {
+                var matches = true
+                for (i in parts.indices) {
+                    if (parts[i] != it.key.path[i]) {
+                        matches = false;
+                    }
+                }
+                matches
+            }.map { it.value }.first { true }
+        } else {
+            _commands.filter { it.key == CommandPath(rootId, parts) }.map { it.value }.first { true }
+            // TODO check for guild command?
         }
-        return null
     }
 
     fun getCommandsByModule(type: Module): List<ExecutableCommand> {
-        return _commands
+        return _commands.values
             .filter { command: ExecutableCommand -> command.module == type }
     }
 
@@ -40,7 +52,18 @@ class CommandManager {
             for (c in classes) {
                 if (ExecutableCommand::class.java.isAssignableFrom(c)) {
                     val command: ExecutableCommand = ConstructorUtils.invokeConstructor(c) as ExecutableCommand
-                    _commands.add(command)
+                    when (command) {
+                        is ExecutableRootCommand -> {
+                            _commands[CommandPath(0, listOf(command.command))] = command;
+                        }
+                        is SubCommand -> {
+                            if (command.group != null) {
+                                _commands[CommandPath(0, listOf(command.parent.command, command.group.groupName, command.command))] = command;
+                            } else {
+                                _commands[CommandPath(0, listOf(command.parent.command, command.command))] = command;
+                            }
+                        }
+                    }
                 }
             }
             LOGGER.info(

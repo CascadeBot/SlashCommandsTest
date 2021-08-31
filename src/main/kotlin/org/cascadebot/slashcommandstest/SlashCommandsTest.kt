@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
+import net.dv8tion.jda.api.sharding.ShardManager
 import org.cascadebot.slashcommandstest.commandmeta.CommandManager
 import org.cascadebot.slashcommandstest.commandmeta.ExecutableRootCommand
 import org.cascadebot.slashcommandstest.commandmeta.ParentCommand
@@ -17,12 +18,14 @@ import org.cascadebot.slashcommandstest.commandmeta.SubCommandGroup
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import javax.annotation.Nonnull
 import kotlin.system.exitProcess
 
 object SlashCommandsTest {
 
     val LOG: Logger = LoggerFactory.getLogger("SlashCommandsTest");
     val commandManager = CommandManager()
+    var shardManager: ShardManager? = null
 
     fun run() {
         initConfig()
@@ -33,7 +36,21 @@ object SlashCommandsTest {
             .setActivityProvider { Activity.playing("Testing slash command") }
             .setBulkDeleteSplittingEnabled(false)
 
-        defaultShardManagerBuilder.build()
+        shardManager = defaultShardManagerBuilder.build()
+        // TODO go in and give all the commands an id
+    }
+
+    fun getClient(): JDA? {
+        if (shardManager == null) {
+            return null
+        } else {
+            for (jda in shardManager!!.shardCache) {
+                if (jda.status == JDA.Status.LOADING_SUBSYSTEMS || jda.status == JDA.Status.CONNECTED) {
+                    return jda
+                }
+            }
+        }
+        throw IllegalStateException("getClient was called when no shards were connected!")
     }
 
     private fun buildSubCommands(command: SubCommand, subCommands: MutableMap<ParentCommand, MutableList<SubCommand>>, subCommandGroups: MutableMap<ParentCommand, MutableList<SubCommandGroup>>, subCommandsOfGroup: MutableMap<SubCommandGroup, MutableList<SubCommand>>) {
