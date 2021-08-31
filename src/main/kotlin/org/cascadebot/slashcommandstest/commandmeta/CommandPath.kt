@@ -1,6 +1,6 @@
 package org.cascadebot.slashcommandstest.commandmeta
 
-data class CommandPath(val rootId: Long) {
+data class CommandPath(var rootId: Long) {
 
     var path: List<String> = listOf()
         private set

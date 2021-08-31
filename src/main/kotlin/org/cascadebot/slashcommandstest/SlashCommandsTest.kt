@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.cascadebot.slashcommandstest.commandmeta.CommandManager
+import org.cascadebot.slashcommandstest.commandmeta.CommandPath
 import org.cascadebot.slashcommandstest.commandmeta.ExecutableRootCommand
 import org.cascadebot.slashcommandstest.commandmeta.ParentCommand
 import org.cascadebot.slashcommandstest.commandmeta.SubCommand
@@ -37,7 +38,36 @@ object SlashCommandsTest {
             .setBulkDeleteSplittingEnabled(false)
 
         shardManager = defaultShardManagerBuilder.build()
-        // TODO go in and give all the commands an id
+
+        getClient()!!.retrieveCommands().queue{
+            var id = 0;
+            for (command in commandManager.commands.map { it.first }) {
+                for (discordCom in it) {
+                    if (discordCom.subcommandGroups.size > 0) {
+                        for (subGroup in discordCom.subcommandGroups) {
+                            for (subComm in subGroup.subcommands) {
+                                val path = listOf(discordCom.name, subGroup.name, subComm.name)
+                                if (command == CommandPath(0, path)) {
+                                    command.rootId = discordCom.idLong
+                                }
+                            }
+                        }
+                    } else if (discordCom.subcommands.size > 0) {
+                        for (subComm in discordCom.subcommands) {
+                            val path = listOf(discordCom.name, subComm.name)
+                            if (command == CommandPath(0, path)) {
+                                command.rootId = discordCom.idLong
+                            }
+                        }
+                    } else {
+                        val path = listOf(discordCom.name)
+                        if (command == CommandPath(0, path)) {
+                            command.rootId = discordCom.idLong
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun getClient(): JDA? {
