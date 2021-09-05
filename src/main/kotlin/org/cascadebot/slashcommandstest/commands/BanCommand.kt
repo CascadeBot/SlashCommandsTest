@@ -9,9 +9,8 @@ import org.cascadebot.slashcommandstest.commandmeta.Module
 
 class BanCommand : ExecutableRootCommand("ban", Module.MODERATION, "Bans a user", "") {
 
-    override val commandData: CommandData
-        get() = CommandData(command, description)
-            .addOption(OptionType.USER, "user", "The user to be banned", true)
+    override val commandData: CommandData = CommandData(command, description)
+        .addOption(OptionType.USER, "user", "The user to be banned", true)
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {
         context.reply("Banned " + args.getArgAsMember("user")?.asMention + " (not really)")

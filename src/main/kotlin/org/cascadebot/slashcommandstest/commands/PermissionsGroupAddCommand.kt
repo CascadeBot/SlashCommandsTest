@@ -8,12 +8,17 @@ import org.cascadebot.slashcommandstest.commandmeta.ParentCommand
 import org.cascadebot.slashcommandstest.commandmeta.SubCommand
 import org.cascadebot.slashcommandstest.commandmeta.SubCommandGroup
 
-class PermissionsGroupAddCommand: SubCommand("add", "add", "Adds a permission to a group", ParentCommand.PERMISSION, SubCommandGroup.PERMISSION_GROUP) {
+class PermissionsGroupAddCommand : SubCommand(
+    "add",
+    "add",
+    "Adds a permission to a group",
+    ParentCommand.PERMISSION,
+    SubCommandGroup.PERMISSION_GROUP
+) {
 
-    override val commandData: SubcommandData
-        get() = SubcommandData(command, description)
-            .addOption(OptionType.STRING, "target", "The group to target")
-            .addOption(OptionType.STRING, "permission", "The permission to add")
+    override val commandData: SubcommandData = SubcommandData(command, description)
+        .addOption(OptionType.STRING, "target", "The group to target")
+        .addOption(OptionType.STRING, "permission", "The permission to add")
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {
 

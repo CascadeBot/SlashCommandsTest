@@ -10,8 +10,7 @@ import org.cascadebot.slashcommandstest.commandmeta.SubCommandGroup
 
 class PermissionsUserRemoveCommand: SubCommand("remove", "remove", "Removes a permission from a user", ParentCommand.PERMISSION, SubCommandGroup.PERMISSION_USER) {
 
-    override val commandData: SubcommandData
-        get() = SubcommandData(command, description)
+    override val commandData: SubcommandData = SubcommandData(command, description)
             .addOption(OptionType.USER, "target", "The user to target")
             .addOption(OptionType.STRING, "permission", "The permission to remove")
 

@@ -8,8 +8,7 @@ import org.cascadebot.slashcommandstest.commandmeta.ParentCommand
 import org.cascadebot.slashcommandstest.commandmeta.SubCommand
 
 class PlayYoutube: SubCommand("youtube", "youtube", "Plays a song from youtube", ParentCommand.PLAY) {
-    override val commandData: SubcommandData
-        get() = SubcommandData(command, description).addOption(OptionType.STRING, "search", "The link or search term for the song you want to play")
+    override val commandData: SubcommandData = SubcommandData(command, description).addOption(OptionType.STRING, "search", "The link or search term for the song you want to play")
 
     override fun onCommand(context: CommandContext, args: CommandArgs, data: Any) {
         TODO("Not yet implemented")
